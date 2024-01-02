@@ -40,6 +40,11 @@ import math
 import timeit
 import traceback
 import cProfile
+# Load postgres client for PYPY
+# TODO: Properly load further down
+from psycopg2cffi import compat
+compat.register()
+import psycopg2cffi as psycopg2
 
 #
 # flags module, on loan from gmt module by Chip Turner.
@@ -93,7 +98,9 @@ def ParseArgs(argv):
   elif FLAGS.dbms == 'mysql':
     globals()['MySQLdb'] = __import__('MySQLdb')
   elif FLAGS.dbms == 'postgres':
-    globals()['psycopg2'] = __import__('psycopg2')
+    # TODO: Properly load pypy postgres client
+    #globals()['psycopg2'] = __import__('psycopg2')
+    pass
   else:
     print('dbms must be one of: mysql, mongodb, postgres')
     sys.exit(-1)
@@ -274,7 +281,7 @@ def get_conn(autocommit_trx=True):
                            autocommit=autocommit_trx)
   else:
     # TODO user, passwd, etc
-    conn = psycopg2.connect(dbname=FLAGS.db_name, host=FLAGS.db_host)
+    conn = psycopg2.connect(dbname=FLAGS.db_name, host=FLAGS.db_host, password=FLAGS.db_password, user=FLAGS.db_user, port=15423)
     conn.set_session(autocommit=autocommit_trx)
     return conn
 
